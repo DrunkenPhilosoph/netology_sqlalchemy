@@ -1,7 +1,8 @@
 import sqlalchemy as sq
 from sqlalchemy.orm import sessionmaker
 import models
-from models import create_tables, Publicist, Book, Shop, Stock, Sale
+from models import Publicist, Book, Shop, Stock, Sale
+from datetime import datetime
 import json
 
 DSN = 'postgresql://postgres:1234@localhost:5432'
@@ -33,6 +34,18 @@ def add_data(path):
             session.commit()
     session.close()
 
+def get_data(search):
+    if search.isdigit():
+        base_query = session.query(Book.title, Shop.name, Stock.count, Sale.price, Sale.date_sale).join(Book).join(Publicist).join(Sale).join(Shop).filter(Publicist.id == search)
+    else:
+        base_query = session.query(Book.title, Shop.name, Stock.count, Sale.price ,Sale.date_sale).join(Book).join(Publicist).join(Sale).join(Shop).filter(Publicist.name == search).all()
+
+    result = ''
+    for i in base_query:
+        result += f"{i[0]} | {i[1]} | {i[3]} | {i[4].strftime('%d-%m-%Y')}\n"
+    return result
 
 if __name__ == '__main__':
     # add_data("tests_data.json")
+    print(get_data(input('Введите id автора или название автора: ')))
+

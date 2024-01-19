@@ -7,30 +7,22 @@ class Publicist(Base):
     __tablename__ = 'publisher'
     id = sq.Column(sq.Integer, primary_key=True)
     name = sq.Column(sq.String(length=255), nullable=False)
-    books = relationship("Book", back_populates="publicist")
+    book = relationship("Book", backref="publicist")
 
+    def __str__(self):
+        return f"{self.id} | {self.name}"
+#
 class Book(Base):
     __tablename__ = 'books'
     id = sq.Column(sq.Integer, primary_key=True)
     title = sq.Column(sq.String(length=255), nullable=False)
     id_publisher = sq.Column(sq.Integer, sq.ForeignKey("publisher.id"), nullable=False)
-    publicist = relationship("Publicist", back_populates="books")
-    stock = relationship("Stock", back_populates="book")
+    stock = relationship("Stock", backref="book")
 
-class Shop(Base):
-    __tablename__ = 'shop'
-    id = sq.Column(sq.Integer, primary_key=True)
-    name = sq.Column(sq.String(length=255), nullable=False)
-    parent = relationship("Stock", back_populates="shop")
+    def __str__(self):
+        return f"{self.id} | {self.title} | {self.id_publisher}"
 
-class Sale(Base):
-    __tablename__ = 'sale'
-    id = sq.Column(sq.Integer, primary_key=True)
-    price = sq.Column(sq.Float)
-    date_sale = sq.Column(sq.Date)
-    id_stock = sq.Column(sq.Integer, sq.ForeignKey("stock.id"), nullable=False)
-    count = sq.Column(sq.Integer, nullable=False)
-    stock = relationship("Stock", back_populates="stock_relation")
+
 
 class Stock(Base):
     __tablename__ = 'stock'
@@ -38,10 +30,32 @@ class Stock(Base):
     id_book = sq.Column(sq.Integer, sq.ForeignKey("books.id"), nullable=False)
     id_shop = sq.Column(sq.Integer, sq.ForeignKey("shop.id"), nullable=False)
     count = sq.Column(sq.Integer, nullable=False)
-    book = relationship("Book", back_populates="stock")
-    shop = relationship("Shop", back_populates="parent")
-    stock_relation = relationship("Sale", back_populates="stock")
+    sale = relationship("Sale", backref="stock")
 
+    def __str__(self):
+        return f"{self.id} | {self.id_book} | {self.id_shop} | {self.count}"
+#
+class Shop(Base):
+    __tablename__ = 'shop'
+    id = sq.Column(sq.Integer, primary_key=True)
+    name = sq.Column(sq.String(length=255), nullable=False)
+    stock = relationship("Stock", backref="shop")
 
+    def __str__(self):
+        return f"{self.id} | {self.name}"
+#
+class Sale(Base):
+    __tablename__ = 'sale'
+    id = sq.Column(sq.Integer, primary_key=True)
+    price = sq.Column(sq.Float)
+    date_sale = sq.Column(sq.Date)
+    id_stock = sq.Column(sq.Integer, sq.ForeignKey("stock.id"), nullable=False)
+    count = sq.Column(sq.Integer, nullable=False)
+
+    def __str__(self):
+        return f"{self.id} | {self.price} | {self.date_sale} | {self.id_stock}"
+#
+#
+#
 def create_tables(engine):
     Base.metadata.create_all(engine)
